@@ -1,4 +1,10 @@
-{% extends "layout.njk" %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% extends "../template.njk" %}
 
 {% block pageTitle %}Create New Task - HMCTS Task Management{% endblock %}
 
@@ -8,49 +14,81 @@
       <h1 class="govuk-heading-xl">Create New Task</h1>
       
       {% if error %}
-        <div class="govuk-error-summary" role="alert">
-          <h2 class="govuk-error-summary__title">There was a problem</h2>
-          <div class="govuk-error-summary__body">
-            <p>{{ error }}</p>
-          </div>
-        </div>
+        {{ govukErrorSummary({
+          titleText: "There was a problem",
+          errorList: [
+            {
+              text: error
+            }
+          ]
+        }) }}
       {% endif %}
       
       <form action="/tasks" method="POST">
-        <div class="govuk-form-group">
-          <label class="govuk-label" for="title">
-            <strong>Title</strong>
-          </label>
-          <input class="govuk-input" id="title" name="title" type="text" required value="{{ formData.title if formData }}">
-        </div>
+        {{ govukInput({
+          label: {
+            text: "Title",
+            classes: "govuk-label--m"
+          },
+          id: "title",
+          name: "title",
+          value: formData.title if formData else '',
+          required: true
+        }) }}
+        
+        {{ govukTextarea({
+          label: {
+            text: "Description (optional)",
+            classes: "govuk-label--m"
+          },
+          id: "description",
+          name: "description",
+          value: formData.description if formData else '',
+          rows: 5
+        }) }}
+        
+        {{ govukSelect({
+          label: {
+            text: "Status",
+            classes: "govuk-label--m"
+          },
+          id: "status",
+          name: "status",
+          items: [
+            {
+              value: "PENDING",
+              text: "Pending",
+              selected: true if not formData or formData.status === 'PENDING'
+            },
+            {
+              value: "IN_PROGRESS",
+              text: "In Progress",
+              selected: true if formData and formData.status === 'IN_PROGRESS'
+            },
+            {
+              value: "DONE",
+              text: "Done",
+              selected: true if formData and formData.status === 'DONE'
+            },
+            {
+              value: "CANCELED",
+              text: "Canceled",
+              selected: true if formData and formData.status === 'CANCELED'
+            }
+          ]
+        }) }}
         
         <div class="govuk-form-group">
-          <label class="govuk-label" for="description">
-            <strong>Description (optional)</strong>
+          <label class="govuk-label govuk-label--m" for="dueDate">
+            Due Date and Time
           </label>
-          <textarea class="govuk-textarea" id="description" name="description" rows="5">{{ formData.description if formData }}</textarea>
+          <input class="govuk-input" id="dueDate" name="dueDate" type="datetime-local" required value="{{ formData.dueDate if formData else '' }}">
         </div>
         
-        <div class="govuk-form-group">
-          <label class="govuk-label" for="status">
-            <strong>Status</strong>
-          </label>
-          <select class="govuk-select" id="status" name="status" required>
-            <option value="PENDING" {% if formData and formData.status === 'PENDING' %}selected{% endif %}>Pending</option>
-            <option value="IN_PROGRESS" {% if formData and formData.status === 'IN_PROGRESS' %}selected{% endif %}>In Progress</option>
-            <option value="DONE" {% if formData and formData.status === 'DONE' %}selected{% endif %}>Done</option>
-            <option value="CANCELED" {% if formData and formData.status === 'CANCELED' %}selected{% endif %}>Canceled</option>
-          </select>
-        </div>
+        {{ govukButton({
+          text: "Create Task"
+        }) }}
         
-        <div class="govuk-form-group">
-          <label class="govuk-label" for="dueDate">
-            <strong>Due Date and Time</strong>
-          </label>
-          <input class="govuk-input" id="dueDate" name="dueDate" type="datetime-local" required value="{{ formData.dueDate if formData }}">
-        </div>
-        
-        <button type="submit" class="govuk-button">Create Task</button>
         <a href="/tasks" class="govuk-button govuk-button--secondary">Cancel</a>
       </form>
     </div>
