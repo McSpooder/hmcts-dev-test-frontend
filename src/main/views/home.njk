@@ -1,19 +1,63 @@
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/table/macro.njk" import govukTable %}
 
 {% extends "template.njk" %}
 
-<!-- You may want to make further use of these components: https://design-system.service.gov.uk/components/
-but ultimately it is up to you -->
-
 {% block content %}
-  <h1 class="govuk-heading-xl">Welcome to your dev test!</h1>
+  <h1 class="govuk-heading-xl">HMCTS Task Management System</h1>
 
-  <!-- The freedom is yours. You can design the solution however you like, however there is a starting point provided
-  to ensure you have both services running. You may want to make use of the Gov UK Components:
-  https://design-system.service.gov.uk/components/ to add tabs and so forth :) -->
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h2 class="govuk-heading-l">Manage Your Tasks</h2>
+      <p class="govuk-body">Welcome to the Task Management System for HMCTS caseworkers. This system allows you to efficiently manage your tasks.</p>
+      
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "View All Tasks",
+          href: "/tasks",
+          classes: "govuk-button--start"
+        }) }}
+        
+        {{ govukButton({
+          text: "Create New Task",
+          href: "/tasks/new"
+        }) }}
+      </div>
+    </div>
+  </div>
 
+  {% if recentTasks and recentTasks.length > 0 %}
+    <h2 class="govuk-heading-l">Recent Tasks</h2>
+    
+    {{ govukTable({
+      caption: "Your most recent tasks",
+      captionClasses: "govuk-table__caption--m",
+      firstCellIsHeader: true,
+      head: [
+        { text: "Title" },
+        { text: "Status" },
+        { text: "Due Date" },
+        { text: "Actions" }
+      ],
+      rows: recentTasks | map(task => [
+        { text: task.title },
+        { html: '<span class="govuk-tag ' + 
+          (task.status === 'PENDING' ? 'govuk-tag--blue' : '') + 
+          (task.status === 'IN_PROGRESS' ? 'govuk-tag--yellow' : '') + 
+          (task.status === 'DONE' ? 'govuk-tag--green' : '') + 
+          (task.status === 'CANCELED' ? 'govuk-tag--grey' : '') + 
+          '">' + task.status + '</span>' },
+        { text: task.dueDate | date("DD/MM/YYYY HH:mm") },
+        { html: '<a href="/tasks/' + task.id + '/edit" class="govuk-link">View/Edit</a>' }
+      ])
+    }) }}
+  {% endif %}
+
+  <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+
+  <h2 class="govuk-heading-l">Example Case Details</h2>
   {% if example.id %}
-
     {{ govukSummaryList({
       rows: [
         {
@@ -76,16 +120,16 @@ but ultimately it is up to you -->
           },
           actions: {
             items: [
-               {
-                 href: "#",
-                 text: "Delete",
-                 visuallyHiddenText: "Delete description"
-               },
-               {
-                 href: "#",
-                 text: "Change",
-                 visuallyHiddenText: "Change description"
-               }
+              {
+                href: "#",
+                text: "Delete",
+                visuallyHiddenText: "Delete description"
+              },
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "Change description"
+              }
             ]
           }
         },
@@ -103,19 +147,17 @@ but ultimately it is up to you -->
         },
         {
           key: {
-           text: "Created Date"
+            text: "Created Date"
           },
           value: {
-           html: example.createdDate
+            html: example.createdDate
           },
           actions: {
-           items: [
-           ]
+            items: [
+            ]
           }
         }
       ]
     }) }}
-
   {% endif %}
-
 {% endblock %}
