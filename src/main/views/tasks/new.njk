@@ -1,0 +1,58 @@
+{% extends "layout.njk" %}
+
+{% block pageTitle %}Create New Task - HMCTS Task Management{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">Create New Task</h1>
+      
+      {% if error %}
+        <div class="govuk-error-summary" role="alert">
+          <h2 class="govuk-error-summary__title">There was a problem</h2>
+          <div class="govuk-error-summary__body">
+            <p>{{ error }}</p>
+          </div>
+        </div>
+      {% endif %}
+      
+      <form action="/tasks" method="POST">
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="title">
+            <strong>Title</strong>
+          </label>
+          <input class="govuk-input" id="title" name="title" type="text" required value="{{ formData.title if formData }}">
+        </div>
+        
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="description">
+            <strong>Description (optional)</strong>
+          </label>
+          <textarea class="govuk-textarea" id="description" name="description" rows="5">{{ formData.description if formData }}</textarea>
+        </div>
+        
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="status">
+            <strong>Status</strong>
+          </label>
+          <select class="govuk-select" id="status" name="status" required>
+            <option value="PENDING" {% if formData and formData.status === 'PENDING' %}selected{% endif %}>Pending</option>
+            <option value="IN_PROGRESS" {% if formData and formData.status === 'IN_PROGRESS' %}selected{% endif %}>In Progress</option>
+            <option value="DONE" {% if formData and formData.status === 'DONE' %}selected{% endif %}>Done</option>
+            <option value="CANCELED" {% if formData and formData.status === 'CANCELED' %}selected{% endif %}>Canceled</option>
+          </select>
+        </div>
+        
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="dueDate">
+            <strong>Due Date and Time</strong>
+          </label>
+          <input class="govuk-input" id="dueDate" name="dueDate" type="datetime-local" required value="{{ formData.dueDate if formData }}">
+        </div>
+        
+        <button type="submit" class="govuk-button">Create Task</button>
+        <a href="/tasks" class="govuk-button govuk-button--secondary">Cancel</a>
+      </form>
+    </div>
+  </div>
+{% endblock %}
