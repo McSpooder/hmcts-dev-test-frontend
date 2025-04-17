@@ -1,16 +1,92 @@
-import { Router, Request, Response } from 'express';
-import { TaskClient, Task } from '../../modules/api-client';
+import { Application, Request, Response, Router } from 'express';
+
+import { Task, TaskClient } from '../../modules/api-client';
 
 const router = Router();
 
-// Get all tasks
-router.get('/', async (req: Request, res: Response) => {
+router.get('/tasks', async (req, res) => {
   try {
     const tasks = await TaskClient.getAllTasks();
-    res.render('tasks/index', { tasks });
+    const rows = tasks.map(task => {
+      let tagClass = '';
+      switch (task.status) {
+        case 'PENDING':
+          tagClass = 'govuk-tag--blue';
+          break;
+        case 'IN_PROGRESS':
+          tagClass = 'govuk-tag--yellow';
+          break;
+        case 'DONE':
+          tagClass = 'govuk-tag--green';
+          break;
+        case 'CANCELED':
+          tagClass = 'govuk-tag--grey';
+          break;
+      }
+
+      return [
+        { text: task.title },
+        { html: `<span class="govuk-tag ${tagClass}">${task.status}</span>` },
+        {
+          text: new Date(task.dueDate).toLocaleString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+        },
+        { html: `<a href="/tasks/${task.id}/edit" class="govuk-link">View/Edit</a>` },
+      ];
+    });
+
+    res.render('tasks/index', { rows });
   } catch (error) {
     console.error('Error fetching tasks:', error);
-    res.render('tasks/index', { tasks: [], error: 'Failed to load tasks' });
+    res.render('tasks/index', { rows: [], error: 'Failed to load tasks' });
+  }
+});
+
+router.get('/', async (req, res) => {
+  try {
+    const tasks = await TaskClient.getAllTasks();
+    const rows = tasks.map(task => {
+      let tagClass = '';
+      switch (task.status) {
+        case 'PENDING':
+          tagClass = 'govuk-tag--blue';
+          break;
+        case 'IN_PROGRESS':
+          tagClass = 'govuk-tag--yellow';
+          break;
+        case 'DONE':
+          tagClass = 'govuk-tag--green';
+          break;
+        case 'CANCELED':
+          tagClass = 'govuk-tag--grey';
+          break;
+      }
+
+      return [
+        { text: task.title },
+        { html: `<span class="govuk-tag ${tagClass}">${task.status}</span>` },
+        {
+          text: new Date(task.dueDate).toLocaleString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+        },
+        { html: `<a href="/tasks/${task.id}/edit" class="govuk-link">View/Edit</a>` },
+      ];
+    });
+
+    res.render('tasks/index', { rows });
+  } catch (error) {
+    console.error('❌ Error fetching tasks:', error);
+    res.render('tasks/index', { rows: [], error: 'Failed to load tasks' });
   }
 });
 
@@ -27,16 +103,16 @@ router.post('/', async (req: Request, res: Response) => {
       title,
       description,
       status,
-      dueDate: new Date(dueDate).toISOString() // Format date for API
+      dueDate: new Date(dueDate).toISOString(), // Format date for API
     };
-    
+
     await TaskClient.createTask(task);
     res.redirect('/tasks');
   } catch (error) {
     console.error('Error creating task:', error);
-    res.render('tasks/new', { 
+    res.render('tasks/new', {
       error: 'Failed to create task',
-      formData: req.body
+      formData: req.body,
     });
   }
 });
@@ -46,11 +122,11 @@ router.get('/:id/edit', async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
     const task = await TaskClient.getTaskById(id);
-    
+
     if (!task) {
       return res.redirect('/tasks');
     }
-    
+
     res.render('tasks/edit', { task });
   } catch (error) {
     console.error('Error fetching task:', error);
@@ -67,9 +143,9 @@ router.post('/:id', async (req: Request, res: Response) => {
       title,
       description,
       status,
-      dueDate: new Date(dueDate).toISOString() // Format date for API
+      dueDate: new Date(dueDate).toISOString(), // Format date for API
     };
-    
+
     await TaskClient.updateTask(id, task);
     res.redirect('/tasks');
   } catch (error) {
@@ -83,7 +159,7 @@ router.post('/:id/status', async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
     const { status } = req.body;
-    
+
     await TaskClient.updateTaskStatus(id, status);
     res.redirect('/tasks');
   } catch (error) {
@@ -96,7 +172,7 @@ router.post('/:id/status', async (req: Request, res: Response) => {
 router.post('/:id/delete', async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
-    
+
     await TaskClient.deleteTask(id);
     res.redirect('/tasks');
   } catch (error) {
@@ -105,4 +181,6 @@ router.post('/:id/delete', async (req: Request, res: Response) => {
   }
 });
 
-export default router;
+export default (app: Application): void => {
+  app.use('/tasks', router);
+};

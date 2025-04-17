@@ -27,9 +27,9 @@
     </div>
   </div>
 
-  {% if recentTasks and recentTasks.length > 0 %}
+  {% if rows and rows.length > 0 %}
     <h2 class="govuk-heading-l">Recent Tasks</h2>
-    
+
     {{ govukTable({
       caption: "Your most recent tasks",
       captionClasses: "govuk-table__caption--m",
@@ -40,17 +40,7 @@
         { text: "Due Date" },
         { text: "Actions" }
       ],
-      rows: recentTasks | map(task => [
-        { text: task.title },
-        { html: '<span class="govuk-tag ' + 
-          (task.status === 'PENDING' ? 'govuk-tag--blue' : '') + 
-          (task.status === 'IN_PROGRESS' ? 'govuk-tag--yellow' : '') + 
-          (task.status === 'DONE' ? 'govuk-tag--green' : '') + 
-          (task.status === 'CANCELED' ? 'govuk-tag--grey' : '') + 
-          '">' + task.status + '</span>' },
-        { text: task.dueDate | date("DD/MM/YYYY HH:mm") },
-        { html: '<a href="/tasks/' + task.id + '/edit" class="govuk-link">View/Edit</a>' }
-      ])
+      rows: rows
     }) }}
   {% endif %}
 

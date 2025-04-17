@@ -10,6 +10,7 @@ const fileNameSuffix = devMode ? '-dev' : '.[contenthash]';
 const filename = `[name]${fileNameSuffix}.js`;
 
 module.exports = {
+  target: 'node',
   plugins: [...govukFrontend.plugins, ...scss.plugins, ...HtmlWebpack.plugins],
   entry: path.resolve(sourcePath, 'index.ts'),
   mode: devMode ? 'development' : 'production',
@@ -18,7 +19,12 @@ module.exports = {
       ...scss.rules,
       {
         test: /\.ts$/,
-        use: 'ts-loader',
+        use: {
+          loader: 'ts-loader',
+          options: {
+            configFile: path.resolve(__dirname, 'tsconfig.json'), // 👈 This is key
+          },
+        },
         exclude: /node_modules/,
       },
     ],

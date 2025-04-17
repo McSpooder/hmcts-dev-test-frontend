@@ -27,31 +27,23 @@
         href: "/tasks/new"
       }) }}
       
-      {% if tasks.length > 0 %}
+      {% if rows and rows.length > 0 %}
+        <h2 class="govuk-heading-l">All Tasks</h2>
+
         {{ govukTable({
+          caption: "List of Tasks",
+          captionClasses: "govuk-table__caption--m",
+          firstCellIsHeader: true,
           head: [
             { text: "Title" },
             { text: "Status" },
             { text: "Due Date" },
             { text: "Actions" }
           ],
-          rows: tasks | map(task => [
-            { html: '<strong>' + task.title + '</strong>' + (task.description ? '<br><span class="govuk-hint">' + task.description + '</span>' : '') },
-            { html: '<span class="govuk-tag ' + 
-              (task.status === 'PENDING' ? 'govuk-tag--blue' : '') + 
-              (task.status === 'IN_PROGRESS' ? 'govuk-tag--yellow' : '') + 
-              (task.status === 'DONE' ? 'govuk-tag--green' : '') + 
-              (task.status === 'CANCELED' ? 'govuk-tag--grey' : '') + 
-              '">' + task.status + '</span>' },
-            { text: task.dueDate | date("DD/MM/YYYY HH:mm") },
-            { html: '<a href="/tasks/' + task.id + '/edit" class="govuk-button govuk-button--secondary">Edit</a> ' + 
-              '<form action="/tasks/' + task.id + '/delete" method="POST" class="govuk-!-display-inline">' + 
-              '<button type="submit" class="govuk-button govuk-button--warning" onclick="return confirm(\'Are you sure you want to delete this task?\')">Delete</button>' + 
-              '</form>' }
-          ])
+          rows: rows
         }) }}
       {% else %}
-        <p class="govuk-body">No tasks found. Create a new task to get started.</p>
+        <p class="govuk-body">No tasks available.</p>
       {% endif %}
       
       <p class="govuk-body">

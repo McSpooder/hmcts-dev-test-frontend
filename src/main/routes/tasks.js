@@ -1,18 +1,6 @@
-import { Application } from 'express';
-import { TaskClient, Task } from '../modules/api-client';
+const { TaskClient } = require('../modules/api-client');
 
-export default function(app: Application): void {
-  // Get all tasks
-  app.get('/tasks', async (req, res) => {
-    try {
-      const tasks = await TaskClient.getAllTasks();
-      res.render('tasks/index', { tasks });
-    } catch (error) {
-      console.error('Error fetching tasks:', error);
-      res.render('tasks/index', { tasks: [], error: 'Failed to load tasks' });
-    }
-  });
-
+module.exports = function (app) {
   // Render create task form
   app.get('/tasks/new', (req, res) => {
     res.render('tasks/new');
@@ -22,20 +10,20 @@ export default function(app: Application): void {
   app.post('/tasks', async (req, res) => {
     try {
       const { title, description, status, dueDate } = req.body;
-      const task: Task = {
+      const task = {
         title,
         description,
         status,
-        dueDate: new Date(dueDate).toISOString() // Format date for API
+        dueDate: new Date(dueDate).toISOString(), // Format date for API
       };
-      
+
       await TaskClient.createTask(task);
       res.redirect('/tasks');
     } catch (error) {
       console.error('Error creating task:', error);
-      res.render('tasks/new', { 
+      res.render('tasks/new', {
         error: 'Failed to create task',
-        formData: req.body
+        formData: req.body,
       });
     }
   });
@@ -45,11 +33,11 @@ export default function(app: Application): void {
     try {
       const id = parseInt(req.params.id);
       const task = await TaskClient.getTaskById(id);
-      
+
       if (!task) {
         return res.redirect('/tasks');
       }
-      
+
       res.render('tasks/edit', { task });
     } catch (error) {
       console.error('Error fetching task:', error);
@@ -62,13 +50,13 @@ export default function(app: Application): void {
     try {
       const id = parseInt(req.params.id);
       const { title, description, status, dueDate } = req.body;
-      const task: Task = {
+      const task = {
         title,
         description,
         status,
-        dueDate: new Date(dueDate).toISOString() // Format date for API
+        dueDate: new Date(dueDate).toISOString(), // Format date for API
       };
-      
+
       await TaskClient.updateTask(id, task);
       res.redirect('/tasks');
     } catch (error) {
@@ -82,7 +70,7 @@ export default function(app: Application): void {
     try {
       const id = parseInt(req.params.id);
       const { status } = req.body;
-      
+
       await TaskClient.updateTaskStatus(id, status);
       res.redirect('/tasks');
     } catch (error) {
@@ -95,7 +83,7 @@ export default function(app: Application): void {
   app.post('/tasks/:id/delete', async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      
+
       await TaskClient.deleteTask(id);
       res.redirect('/tasks');
     } catch (error) {
@@ -103,4 +91,4 @@ export default function(app: Application): void {
       res.redirect('/tasks');
     }
   });
-}
+};

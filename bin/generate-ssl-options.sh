@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/bash
 #
 # Script to generate private RSA key and a self-signed certificate under src/main/resources/localhost-ssl (git-ignored)
 # These resources are used for exposing the application via HTTPS in development environment. They must not be used

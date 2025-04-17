@@ -1,17 +1,16 @@
 import * as path from 'path';
 
-import { HTTPError } from './HttpError';
-import { Nunjucks } from './modules/nunjucks';
-
 import * as bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import express from 'express';
 import { glob } from 'glob';
 import favicon from 'serve-favicon';
 
-const { setupDev } = require('./development');
+import { HTTPError } from './HttpError';
+import { Nunjucks } from './modules/nunjucks';
 
-const env = process.env.NODE_ENV || 'development';
+const { setupDev } = require('./development');
+const env = process.env.NODE_ENV ?? 'development';
 const developmentMode = env === 'development';
 
 export const app = express();
@@ -29,17 +28,26 @@ app.use((req, res, next) => {
   next();
 });
 
-glob
-  .sync(__dirname + '/routes/**/*.+(ts|js)')
-  .map(filename => require(filename))
-  .forEach(route => route.default(app));
+const routeFiles = glob.sync(path.join(__dirname, 'routes/**/*.+(ts|js)'));
+
+routeFiles.forEach(filename => {
+  console.log('Requiring route:', filename);
+  const route = require(filename);
+
+  if (typeof route === 'function') {
+    route(app); // CommonJS style
+  } else if (typeof route.default === 'function') {
+    route.default(app); // ESModule/TypeScript style
+  } else {
+    console.warn('Route file does not export a function:', filename);
+  }
+});
 
 setupDev(app, developmentMode);
 
 // error handler
 app.use((err: HTTPError, req: express.Request, res: express.Response) => {
   console.log(err);
-  // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = env === 'development' ? err : {};
   res.status(err.status || 500);

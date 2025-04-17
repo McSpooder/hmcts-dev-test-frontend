@@ -94,20 +94,24 @@
       </form>
       
       <h2 class="govuk-heading-m govuk-!-margin-top-6">Quick Status Update</h2>
-      <form action="/tasks/{{ task.id }}/status" method="POST" class="govuk-!-margin-bottom-6">
+      <form action="/tasks/{{ task.id }}/status" method="POST" class="govuk-!-margin-bottom-6" id="status-form">
+        <input type="hidden" name="_method" value="PATCH"> <!-- Simulate PATCH -->
         <input type="hidden" name="status" id="status-field" value="">
         <div class="govuk-button-group">
-          <button type="submit" class="govuk-button govuk-button--secondary" 
-            onclick="document.getElementById('status-field').value='PENDING'">Pending</button>
-          <button type="submit" class="govuk-button govuk-button--secondary" 
-            onclick="document.getElementById('status-field').value='IN_PROGRESS'">In Progress</button>
-          <button type="submit" class="govuk-button govuk-button--secondary" 
-            onclick="document.getElementById('status-field').value='DONE'">Done</button>
-          <button type="submit" class="govuk-button govuk-button--warning" 
-            onclick="document.getElementById('status-field').value='CANCELED'">Canceled</button>
+          <button type="button" class="govuk-button govuk-button--secondary" onclick="updateStatus('PENDING')">Pending</button>
+          <button type="button" class="govuk-button govuk-button--secondary" onclick="updateStatus('IN_PROGRESS')">In Progress</button>
+          <button type="button" class="govuk-button govuk-button--secondary" onclick="updateStatus('DONE')">Done</button>
+          <button type="button" class="govuk-button govuk-button--warning" onclick="updateStatus('CANCELED')">Canceled</button>
         </div>
       </form>
-      
+
+      <script>
+        function updateStatus(status) {
+          document.getElementById('status-field').value = status;
+          document.getElementById('status-form').submit();  // Submit form with PATCH request
+        }
+      </script>
+            
       <a href="/tasks" class="govuk-link govuk-!-margin-top-6">Return to All Tasks</a>
     </div>
   </div>
